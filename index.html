@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nikkahfied — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#faf3f6;
+    --surface:#ffffff;
+    --ink:#2a2126;
+    --muted:#9c8f95;
+    --line:rgba(42,33,38,.09);
+    --emerald:#d1567f;            /* primary rose (kept var name for cascade) */
+    --emerald-soft:#fce7ef;
+    --emerald-700:#a83e64;
+    --gold:#c39a3e;
+    --rose:#d96f8e;
+    --pass:#9aa0ab;              /* neutral pass */
+    --shadow:0 24px 60px -28px rgba(120,40,70,.34);
+    --radius:26px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:"Outfit",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 700px at 15% -10%, #f7dde8 0%, transparent 55%),
+      radial-gradient(1000px 800px at 110% 110%, #efdfe9 0%, transparent 50%),
+      #ece0e5;
+    min-height:100dvh;
+    display:flex;align-items:center;justify-content:center;
+    padding:32px 16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .stage{display:flex;flex-direction:column;align-items:center;gap:22px}
+  .brandline{display:flex;align-items:center;gap:12px;color:#5c5447}
+  .brandline .mark{width:30px;height:30px}
+  .brandline h1{font-family:"Fraunces",serif;font-weight:500;font-size:22px;letter-spacing:-.02em;color:var(--emerald-700)}
+  .brandline span{font-size:13px;color:#857d70}
+  .hint{font-size:12.5px;color:#857d70;letter-spacing:.01em}
+
+  /* ---------- PHONE ---------- */
+  .phone{
+    position:relative;width:392px;height:830px;
+    background:#0d0d0f;border-radius:54px;padding:13px;
+    box-shadow:var(--shadow), 0 0 0 2px rgba(255,255,255,.04) inset;
+  }
+  .screenport{
+    position:relative;width:100%;height:100%;
+    background:var(--bg);border-radius:42px;overflow:hidden;
+  }
+  .island{
+    position:absolute;top:11px;left:50%;transform:translateX(-50%);
+    width:118px;height:33px;background:#000;border-radius:20px;z-index:120;
+  }
+  .statusbar{
+    position:absolute;top:0;left:0;right:0;height:52px;z-index:110;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 30px 0;font-size:13.5px;font-weight:600;color:var(--ink);
+    pointer-events:none;
+  }
+  .statusbar.dark{color:#fff}
+  .statusbar .icons{display:flex;align-items:center;gap:6px}
+  .statusbar svg{display:block}
+
+  /* ---------- SCREENS ---------- */
+  .screen{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;transform:translateX(14px);
+    transition:opacity .42s cubic-bezier(.16,1,.3,1), transform .42s cubic-bezier(.16,1,.3,1), visibility .42s;
+    overflow:hidden;
+  }
+  .screen.active{opacity:1;visibility:visible;transform:none}
+  .body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+  /* reserve space so content clears the fixed bottom nav (84px) */
+  #browse .body,#matches .body,#profile .body{padding-bottom:96px}
+  .body::-webkit-scrollbar{display:none}
+  .pad{padding:0 22px}
+
+  /* top app bar */
+  .appbar{
+    padding:62px 22px 14px;display:flex;align-items:center;justify-content:space-between;
+    background:var(--bg);position:relative;z-index:5;
+  }
+  .appbar .title{font-family:"Fraunces",serif;font-weight:500;font-size:25px;letter-spacing:-.02em}
+  .appbar .title small{display:block;font-family:"Outfit";font-weight:400;font-size:12px;color:var(--muted);letter-spacing:.02em;margin-top:2px}
+  .iconbtn{
+    width:42px;height:42px;border-radius:14px;border:1px solid var(--line);
+    background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink);
+    transition:transform .15s ease, background .2s;
+  }
+  .iconbtn:active{transform:scale(.93)}
+  .iconbtn.ghost{background:transparent;border-color:transparent}
+
+  /* buttons */
+  .btn{
+    border:none;border-radius:16px;font-family:inherit;font-size:15.5px;font-weight:600;
+    padding:16px 20px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
+    position:relative;overflow:hidden;
+    transition:transform .2s cubic-bezier(.16,1,.3,1), box-shadow .25s, background .2s;
+  }
+  .btn:hover{transform:translateY(-1.5px)}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn-primary{background:var(--emerald);color:#fff;box-shadow:0 14px 26px -14px rgba(190,60,110,.55)}
+  .btn-primary:hover{box-shadow:0 20px 34px -12px rgba(190,60,110,.72)}
+  .btn-ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+  .btn-gold{background:linear-gradient(180deg,#caa14a,#b78a32);color:#3a2c08;box-shadow:0 12px 24px -14px rgba(183,138,50,.7)}
+  /* sheen sweep across solid buttons on hover */
+  .btn-primary::after,.btn-gold::after{content:"";position:absolute;top:0;left:0;width:42%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);
+    transform:translateX(-180%) skewX(-18deg);pointer-events:none}
+  .btn-primary:hover::after,.btn-gold:hover::after{animation:sheen .9s ease}
+  /* click ripple (added via JS) */
+  .ripple{position:absolute;border-radius:50%;background:rgba(209,86,127,.28);transform:translate(-50%,-50%) scale(0);pointer-events:none;animation:ripple .6s ease-out forwards}
+  .btn-primary .ripple,.btn-gold .ripple{background:rgba(255,255,255,.4)}
+  .iconbtn,.menu a,.chip{position:relative;overflow:hidden}
+
+  /* ---------- MOTION / KEYFRAMES ---------- */
+  @keyframes sheen{0%{transform:translateX(-180%) skewX(-18deg)}100%{transform:translateX(360%) skewX(-18deg)}}
+  @keyframes ripple{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+  @keyframes heartbeat{0%,32%,100%{transform:scale(1)}8%{transform:scale(1.16)}16%{transform:scale(1)}24%{transform:scale(1.1)}}
+  @keyframes ringpulse{0%{transform:scale(1);opacity:.4}70%{transform:scale(1.55);opacity:0}100%{opacity:0}}
+  @keyframes twinkle{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(9deg) scale(1.14)}}
+  @keyframes navpop{0%{transform:scale(.7)}55%{transform:scale(1.24)}100%{transform:scale(1)}}
+  @keyframes riseIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+  @keyframes popin{0%{transform:scale(.55);opacity:0}60%{transform:scale(1.09)}100%{transform:scale(1);opacity:1}}
+  @keyframes dotpulse{0%{box-shadow:0 0 0 0 rgba(54,192,138,.55)}70%{box-shadow:0 0 0 7px rgba(54,192,138,0)}100%{box-shadow:0 0 0 0 rgba(54,192,138,0)}}
+  @keyframes shimmer{0%{transform:translateX(-160%) skewX(-18deg)}60%,100%{transform:translateX(420%) skewX(-18deg)}}
+  @keyframes cardin{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+  /* logo heartbeat */
+  .brandline .mark{transform-origin:center;animation:heartbeat 3.4s ease-in-out infinite}
+  /* primary like button: breathing sonar ring + hover */
+  .sa-like{position:relative}
+  .sa-like::before{content:"";position:absolute;inset:0;border-radius:50%;border:2.5px solid var(--emerald);animation:ringpulse 2.6s ease-out infinite;pointer-events:none}
+  .swipe-actions button{transition:transform .18s cubic-bezier(.16,1,.3,1)}
+  .swipe-actions button:hover{transform:translateY(-3px) scale(1.06)}
+  .sa-star svg{transform-origin:center;animation:twinkle 3.2s ease-in-out infinite}
+  /* nav active icon springs in */
+  .nav button svg{transition:transform .25s cubic-bezier(.16,1,.3,1)}
+  .nav button.on svg{animation:navpop .45s cubic-bezier(.16,1,.3,1)}
+  /* presence dots breathe */
+  .mrow .av .on{animation:dotpulse 2.1s ease-out infinite}
+  /* verified pill shimmer */
+  .card .verify{overflow:hidden}
+  .card .verify::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:linear-gradient(110deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-160%) skewX(-18deg);animation:shimmer 4s ease-in-out infinite}
+  /* deck cards settle into a stacked depth via applyStack() */
+  /* staggered list reveals when a screen opens */
+  #matches.active .nm-item{animation:popin .5s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i,0)*60ms)}
+  #matches.active .mrow{animation:riseIn .5s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i,0)*55ms)}
+  #browse.active .pcard{animation:riseIn .55s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i,0)*45ms)}
+  #chat.active .bubble{animation:riseIn .45s cubic-bezier(.16,1,.3,1) both}
+  #chat.active .bubble:nth-child(2){animation-delay:.05s}#chat.active .bubble:nth-child(3){animation-delay:.12s}
+  #chat.active .bubble:nth-child(4){animation-delay:.19s}#chat.active .bubble:nth-child(5){animation-delay:.26s}
+  #detail.active .biorow{animation:riseIn .5s cubic-bezier(.16,1,.3,1) both}
+  #detail.active .biorow:nth-child(2){animation-delay:.06s}#detail.active .biorow:nth-child(3){animation-delay:.12s}
+  #detail.active .biorow:nth-child(4){animation-delay:.18s}#detail.active .biorow:nth-child(5){animation-delay:.24s}#detail.active .biorow:nth-child(6){animation-delay:.3s}
+  /* match popup celebration */
+  .matchpop.show .avs img{animation:popin .6s cubic-bezier(.16,1,.3,1) both}
+  .matchpop.show .avs img:last-child{animation-delay:.12s}
+  .matchpop.show .avs .heart{animation:heartbeat 1.5s ease-in-out infinite}
+  .matchpop.show h2{animation:riseIn .5s cubic-bezier(.16,1,.3,1) both;animation-delay:.18s}
+
+  /* ---------- SPLASH ---------- */
+  #splash{background:linear-gradient(170deg,#c25681 0%,#8a3354 58%,#5e2038 100%);align-items:center;justify-content:center}
+  #splash .glow{position:absolute;inset:0;background:radial-gradient(420px 420px at 50% 38%,rgba(183,138,50,.22),transparent 70%)}
+  #splash .wrap{position:relative;z-index:2;text-align:center;color:#fff;display:flex;flex-direction:column;align-items:center;gap:18px;padding:0 40px}
+  #splash .logo{width:92px;height:92px;display:grid;place-items:center;border-radius:28px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);animation:floaty 4s ease-in-out infinite}
+  #splash h2{font-family:"Fraunces",serif;font-weight:500;font-size:38px;letter-spacing:-.02em}
+  #splash p{font-size:14.5px;color:rgba(255,255,255,.72);max-width:24ch;line-height:1.6}
+  #splash .dots{display:flex;gap:7px;margin-top:6px}
+  #splash .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);animation:pulse 1.4s ease-in-out infinite}
+  #splash .dots i:nth-child(2){animation-delay:.2s}
+  #splash .dots i:nth-child(3){animation-delay:.4s}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.35)}}
+
+  /* ---------- ONBOARDING ---------- */
+  #onboarding{background:var(--bg)}
+  .ob-hero{height:54%;position:relative;overflow:hidden;border-bottom-left-radius:34px;border-bottom-right-radius:34px}
+  .ob-hero img{width:100%;height:100%;object-fit:cover;filter:saturate(.95)}
+  .ob-hero .veil{position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 2%,transparent 42%)}
+  .ob-hero .badge{position:absolute;top:64px;left:22px;background:rgba(74,24,46,.5);backdrop-filter:blur(8px);color:#fff;border:1px solid rgba(255,255,255,.18);padding:8px 13px;border-radius:30px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:7px}
+  .ob-content{flex:1;padding:14px 26px 30px;display:flex;flex-direction:column}
+  .ob-content h2{font-family:"Fraunces",serif;font-weight:500;font-size:29px;line-height:1.12;letter-spacing:-.02em;margin-bottom:10px}
+  .ob-content h2 em{font-style:italic;color:var(--gold)}
+  .ob-content p{font-size:15px;color:var(--muted);line-height:1.6;max-width:34ch}
+  .ob-dots{display:flex;gap:8px;margin:22px 0}
+  .ob-dots i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:.3s}
+  .ob-dots i.on{width:26px;border-radius:6px;background:var(--emerald)}
+  .ob-actions{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+
+  /* ---------- AUTH ---------- */
+  .auth{background:var(--bg)}
+  .auth .top{padding:64px 26px 0}
+  .auth h2{font-family:"Fraunces",serif;font-weight:500;font-size:30px;letter-spacing:-.02em;margin-bottom:6px}
+  .auth .sub{font-size:14.5px;color:var(--muted);margin-bottom:26px}
+  .auth .form{padding:0 26px;display:flex;flex-direction:column;gap:16px}
+  .field{display:flex;flex-direction:column;gap:8px}
+  .field label{font-size:13px;font-weight:500;color:#5f584d}
+  .field .control{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:14px 15px;transition:border .2s, box-shadow .2s}
+  .field .control:focus-within{border-color:var(--emerald);box-shadow:0 0 0 4px var(--emerald-soft)}
+  .field .control input{border:none;outline:none;background:none;font-family:inherit;font-size:15px;color:var(--ink);width:100%}
+  .field .control input::placeholder{color:#b3ada3}
+  .field .control svg{color:var(--muted);flex-shrink:0}
+  .divider{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:12.5px;margin:22px 0}
+  .divider::before,.divider::after{content:"";height:1px;flex:1;background:var(--line)}
+  .social{display:flex;gap:12px}
+  .social .btn{flex:1;font-size:14px}
+  .switchrow{text-align:center;font-size:13.5px;color:var(--muted);padding:22px}
+  .switchrow b{color:var(--emerald);font-weight:600;cursor:pointer}
+
+  /* ---------- DISCOVER / SWIPE ---------- */
+  .deck{position:relative;flex:1;margin:6px 18px 4px;perspective:1400px}
+  .card{
+    position:absolute;inset:0;background:#222;border-radius:28px;overflow:hidden;
+    box-shadow:0 30px 50px -26px rgba(20,40,33,.55);cursor:grab;
+    transform-origin:center;will-change:transform;user-select:none;touch-action:none;
+    transition:transform .45s cubic-bezier(.22,1,.36,1), opacity .4s ease;
+  }
+  .card img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+  .card .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,22,17,.92) 4%,rgba(8,22,17,.15) 42%,transparent 64%)}
+  .card .verify{position:absolute;top:16px;right:16px;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:30px}
+  .card .verify svg{color:#7fe0b6}
+  .card .info{position:absolute;left:20px;right:84px;bottom:18px;color:#fff}
+  .card .info .nm{display:flex;align-items:baseline;gap:9px}
+  .card .info h3{font-family:"Fraunces",serif;font-weight:500;font-size:26px;letter-spacing:-.01em}
+  .card .info .age{font-size:20px;font-weight:300}
+  .card .info .meta{display:flex;align-items:center;gap:7px;font-size:13.5px;color:rgba(255,255,255,.82);margin-top:5px}
+  .card .info .meta .dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.5)}
+  .card .tags{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+  .card .tags span{font-size:11.5px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px);padding:5px 10px;border-radius:20px}
+  .stamp{position:absolute;top:34px;font-family:"Fraunces",serif;font-size:30px;font-weight:600;letter-spacing:.04em;padding:6px 16px;border-radius:12px;border:3px solid;opacity:0;transform:rotate(-12deg);text-transform:uppercase}
+  .stamp.like{left:22px;color:#d1567f;border-color:#d1567f}
+  .stamp.view{right:22px;color:var(--gold);border-color:var(--gold);transform:rotate(12deg)}
+  .stamp.nope{left:50%;top:50%;color:#9aa0ab;border-color:#9aa0ab;transform:translate(-50%,-50%)}
+  /* on-card Like + Info controls */
+  #discover{padding-bottom:84px}
+  .deck-controls{position:absolute;right:18px;bottom:34px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:12px;transition:opacity .3s ease;overflow:visible}
+  .dc-btn{border:none;cursor:pointer;display:grid;place-items:center;border-radius:50%;transition:transform .18s cubic-bezier(.16,1,.3,1);box-shadow:0 12px 24px -12px rgba(20,20,40,.55);flex-shrink:0;padding:0;overflow:visible}
+  .dc-btn svg{display:block}
+  .dc-btn:active{transform:scale(.9)}
+  .dc-like{width:56px;height:56px;background:var(--emerald);color:#fff}
+  .dc-like svg{margin-top:1px}            /* optical-center the heart glyph */
+  .dc-like:hover{transform:translateY(-3px) scale(1.06)}
+  .dc-info{width:44px;height:44px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);color:var(--ink);border:1px solid rgba(255,255,255,.6)}
+  .dc-info:hover{transform:translateY(-2px) scale(1.06)}
+  .deck-empty{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:30px;color:var(--muted)}
+  .deck-empty.show{display:flex}
+  .deck-empty .circ{width:84px;height:84px;border-radius:50%;background:var(--emerald-soft);display:grid;place-items:center;color:var(--emerald)}
+  .deck-empty h3{font-family:"Fraunces",serif;color:var(--ink);font-size:21px;font-weight:500}
+
+  /* ---------- BROWSE ---------- */
+  .searchbar{margin:4px 22px 10px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:13px 15px}
+  .searchbar input{border:none;outline:none;background:none;font-family:inherit;font-size:14.5px;width:100%;color:var(--ink)}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 22px 14px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0;font-size:12.5px;font-weight:500;padding:8px 14px;border-radius:30px;border:1px solid var(--line);background:var(--surface);color:#5f584d;cursor:pointer;transition:.2s}
+  .chip.on{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:2px 22px 26px}
+  .pcard{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:3/4;cursor:pointer;box-shadow:0 14px 28px -20px rgba(20,40,33,.5)}
+  .pcard img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+  .pcard:active img{transform:scale(1.05)}
+  .pcard .blurpill{position:absolute;top:10px;left:10px;background:rgba(60,24,40,.58);backdrop-filter:blur(8px);color:#fff;font-size:10.5px;font-weight:500;padding:5px 9px;border-radius:20px;display:flex;align-items:center;gap:5px}
+  .pcard .ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,22,17,.85),transparent 52%)}
+  .pcard .lbl{position:absolute;left:12px;right:12px;bottom:11px;color:#fff}
+  .pcard .lbl h4{font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:5px}
+  .pcard .lbl p{font-size:11.5px;color:rgba(255,255,255,.8);margin-top:2px}
+  .pcard.blurred img{filter:blur(14px) brightness(.85);transform:scale(1.1)}
+  .pcard .reveal{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff;text-align:center;padding:14px}
+  .pcard .reveal svg{opacity:.9}
+  .pcard .reveal small{font-size:11px;color:rgba(255,255,255,.85);line-height:1.4}
+
+  /* ---------- MATCHES ---------- */
+  .newrow{display:flex;gap:14px;overflow-x:auto;padding:6px 22px 18px}
+  .newrow::-webkit-scrollbar{display:none}
+  .nm-item{flex-shrink:0;width:66px;text-align:center;cursor:pointer}
+  .nm-item .ring{width:66px;height:66px;border-radius:50%;padding:2.5px;background:linear-gradient(135deg,var(--gold),var(--emerald));margin-bottom:6px}
+  .nm-item .ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2.5px solid var(--bg)}
+  .nm-item span{font-size:11.5px;color:#5f584d;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seclabel{padding:4px 22px 12px;font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .mlist{display:flex;flex-direction:column}
+  .mrow{display:flex;align-items:center;gap:14px;padding:13px 22px;cursor:pointer;transition:background .2s}
+  .mrow:active{background:#f0ece4}
+  .mrow .av{position:relative;width:58px;height:58px;border-radius:18px;overflow:hidden;flex-shrink:0}
+  .mrow .av img{width:100%;height:100%;object-fit:cover}
+  .mrow .av .on{position:absolute;right:2px;bottom:2px;width:13px;height:13px;border-radius:50%;background:#36c08a;border:2.5px solid var(--bg)}
+  .mrow .txt{flex:1;min-width:0}
+  .mrow .txt .l1{display:flex;align-items:center;gap:6px}
+  .mrow .txt h4{font-size:15px;font-weight:600}
+  .mrow .txt .l1 svg{color:var(--emerald);flex-shrink:0}
+  .mrow .txt p{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .mrow .side{text-align:right;flex-shrink:0}
+  .mrow .side .t{font-size:11.5px;color:var(--muted)}
+  .mrow .side .unread{margin-top:6px;width:20px;height:20px;border-radius:50%;background:var(--emerald);color:#fff;font-size:11px;font-weight:600;display:inline-grid;place-items:center}
+
+  /* ---------- CHAT THREAD ---------- */
+  #chat{background:#efe9df}
+  .chat-head{padding:58px 16px 12px;display:flex;align-items:center;gap:12px;background:var(--surface);border-bottom:1px solid var(--line)}
+  .chat-head .av{width:42px;height:42px;border-radius:14px;overflow:hidden}
+  .chat-head .av img{width:100%;height:100%;object-fit:cover}
+  .chat-head .who h4{font-size:15.5px;font-weight:600;display:flex;align-items:center;gap:5px}
+  .chat-head .who h4 svg{color:var(--emerald)}
+  .chat-head .who p{font-size:12px;color:#36c08a}
+  .chaperone{margin:12px 16px 4px;background:var(--emerald-soft);border:1px solid #f6cfe0;border-radius:14px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start}
+  .chaperone svg{color:var(--emerald);flex-shrink:0;margin-top:1px}
+  .chaperone p{font-size:12px;color:var(--emerald-700);line-height:1.45}
+  .chaperone b{font-weight:600}
+  .msgs{flex:1;overflow-y:auto;padding:14px 16px 8px;display:flex;flex-direction:column;gap:9px}
+  .msgs::-webkit-scrollbar{display:none}
+  .bubble{max-width:74%;padding:11px 14px;font-size:14px;line-height:1.45;border-radius:18px}
+  .bubble.them{align-self:flex-start;background:var(--surface);border-bottom-left-radius:5px;color:var(--ink)}
+  .bubble.me{align-self:flex-end;background:var(--emerald);color:#fff;border-bottom-right-radius:5px}
+  .bubble .tm{display:block;font-size:10px;margin-top:4px;opacity:.6}
+  .daypill{align-self:center;font-size:11px;color:var(--muted);background:rgba(0,0,0,.05);padding:4px 12px;border-radius:20px;margin:4px 0}
+  .composer{padding:10px 14px 20px;background:var(--surface);border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .composer .inp{flex:1;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:24px;padding:11px 15px}
+  .composer .inp input{border:none;outline:none;background:none;font-family:inherit;font-size:14.5px;width:100%}
+  .composer .send{width:46px;height:46px;border-radius:50%;background:var(--emerald);border:none;color:#fff;display:grid;place-items:center;cursor:pointer;flex-shrink:0;transition:transform .14s}
+  .composer .send:active{transform:scale(.9)}
+
+  /* ---------- PROFILE DETAIL ---------- */
+  #detail{background:var(--bg);z-index:60}
+  .det-hero{position:relative;height:420px}
+  .det-hero img{width:100%;height:100%;object-fit:cover}
+  .det-hero .veil{position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 1%,transparent 38%)}
+  .det-back{position:absolute;top:58px;left:18px;z-index:5;width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);display:grid;place-items:center;cursor:pointer;border:1px solid rgba(255,255,255,.5)}
+  .det-name{position:absolute;left:24px;right:24px;bottom:14px;color:#fff}
+  .det-name h2{font-family:"Fraunces",serif;font-weight:500;font-size:30px;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+  .det-name h2 svg{color:#7fe0b6}
+  .det-name .meta{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:4px;color:rgba(255,255,255,.9)}
+  .det-name .meta .dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.6)}
+  .det-body{padding:6px 24px 120px}
+  .biocard{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px 18px;margin-bottom:16px}
+  .biorow{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .biorow:last-child{border-bottom:none}
+  .biorow .ic{width:38px;height:38px;border-radius:12px;background:var(--emerald-soft);display:grid;place-items:center;color:var(--emerald);flex-shrink:0}
+  .biorow .k{font-size:12px;color:var(--muted)}
+  .biorow .v{font-size:14.5px;font-weight:500;margin-top:1px}
+  .secttitle{font-family:"Fraunces",serif;font-size:18px;font-weight:500;margin:4px 0 12px}
+  .abouttxt{font-size:14.5px;color:#52493e;line-height:1.65}
+  .interests{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 6px}
+  .interests span{font-size:12.5px;background:var(--surface);border:1px solid var(--line);padding:8px 13px;border-radius:30px;color:#52493e}
+  .det-cta{position:absolute;left:0;right:0;bottom:0;padding:16px 24px 26px;background:linear-gradient(to top,var(--bg) 70%,transparent);display:flex;gap:12px}
+  .det-cta .sa-pass{width:56px;height:56px;border:1px solid var(--line);background:var(--surface)}
+  .det-cta .btn{flex:1}
+
+  /* ---------- MY PROFILE ---------- */
+  .me-head{padding:64px 24px 10px;text-align:center}
+  .me-head .av{width:104px;height:104px;border-radius:34px;overflow:hidden;margin:0 auto 14px;position:relative;border:3px solid var(--surface);box-shadow:var(--shadow)}
+  .me-head .av img{width:100%;height:100%;object-fit:cover}
+  .me-head .edit{position:absolute;right:-4px;bottom:-4px;width:34px;height:34px;border-radius:50%;background:var(--emerald);color:#fff;display:grid;place-items:center;border:3px solid var(--bg)}
+  .me-head h2{font-family:"Fraunces",serif;font-weight:500;font-size:24px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .me-head h2 svg{color:var(--emerald)}
+  .me-head p{font-size:13.5px;color:var(--muted);margin-top:3px}
+  .completion{margin:18px 24px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+  .completion .l1{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .completion .l1 span{font-size:13.5px;font-weight:500}
+  .completion .l1 b{font-size:13.5px;color:var(--emerald);font-weight:600}
+  .bar{height:8px;border-radius:6px;background:var(--emerald-soft);overflow:hidden}
+  .bar i{display:block;height:100%;width:78%;border-radius:6px;background:linear-gradient(90deg,var(--emerald),#ec8fb4)}
+  .menu{margin:6px 24px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .menu a{display:flex;align-items:center;gap:14px;padding:15px 16px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink);text-decoration:none;transition:background .2s}
+  .menu a:last-child{border-bottom:none}
+  .menu a:active{background:#f0ece4}
+  .menu a .ic{width:36px;height:36px;border-radius:11px;background:var(--emerald-soft);color:var(--emerald);display:grid;place-items:center;flex-shrink:0}
+  .menu a .ic.gold{background:#f6efdd;color:var(--gold)}
+  .menu a .lab{flex:1;font-size:14.5px;font-weight:500}
+  .menu a .sub{font-size:12px;color:var(--muted);font-weight:400}
+  .menu a .arr{color:#c5beb2}
+
+  /* ---------- BOTTOM NAV ---------- */
+  .nav{
+    position:absolute;left:0;right:0;bottom:0;height:84px;z-index:80;
+    background:rgba(247,244,239,.92);backdrop-filter:blur(16px);border-top:1px solid var(--line);
+    display:flex;align-items:flex-start;justify-content:space-around;padding:11px 12px 0;
+    transition:transform .35s cubic-bezier(.16,1,.3,1);
+  }
+  .nav.hidden{transform:translateY(110%)}
+  .nav button{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:#9b948a;font-family:inherit;font-size:10.5px;font-weight:500;padding:4px 10px;position:relative}
+  .nav button.on{color:var(--emerald)}
+  .nav button .badge{position:absolute;top:-2px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--rose);color:#fff;font-size:9.5px;font-weight:600;display:grid;place-items:center}
+
+  /* ---------- MATCH OVERLAY ---------- */
+  .matchpop{position:absolute;inset:0;z-index:200;background:linear-gradient(170deg,rgba(176,55,98,.97),rgba(94,32,56,.98));display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;color:#fff}
+  .matchpop.show{display:flex;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .matchpop h2{font-family:"Fraunces",serif;font-size:40px;font-weight:500;color:var(--gold)}
+  .matchpop p{font-size:14.5px;color:rgba(255,255,255,.78);margin:8px 0 28px;max-width:26ch;line-height:1.55}
+  .matchpop .avs{display:flex;align-items:center;margin-bottom:8px}
+  .matchpop .avs img{width:96px;height:96px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,.15)}
+  .matchpop .avs img:last-child{margin-left:-26px}
+  .matchpop .avs .heart{position:relative;z-index:3;width:46px;height:46px;border-radius:50%;background:var(--gold);display:grid;place-items:center;margin:0 -16px;color:#5e2038;box-shadow:0 0 0 6px rgba(94,32,56,.6)}
+  .matchpop .acts{width:100%;display:flex;flex-direction:column;gap:11px;margin-top:6px}
+  .matchpop .acts .btn-ghost{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
+
+  /* ---------- MOBILE RESPONSIVE ---------- */
+  /* Phones: the app fills the whole screen like a native app */
+  @media (max-width:560px){
+    html,body{overflow-x:hidden}
+    body{padding:0;display:block;background:var(--bg)}
+    .stage{gap:0;width:100%;display:block}
+    .brandline,.hint{display:none}
+    .phone{width:100vw;max-width:100%;height:100svh;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+    .screenport{border-radius:0}
+    .island{display:none}
+    /* respect device notch / status bar */
+    .statusbar{padding-top:max(18px,env(safe-area-inset-top))}
+    .appbar{padding-top:max(62px,calc(40px + env(safe-area-inset-top)))}
+    .chat-head,.auth .top,.me-head{padding-top:max(58px,calc(36px + env(safe-area-inset-top)))}
+    .det-back,.ob-hero .badge{top:max(58px,calc(36px + env(safe-area-inset-top)))}
+    /* keep content clear of the home-indicator / nav */
+    .nav{padding-bottom:max(0px,env(safe-area-inset-bottom))}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="brandline">
+    <svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.2 4 2.5C10.8 6.2 12 5 14 5h.5" stroke="#d1567f" stroke-width="1.6" stroke-linecap="round"/><path d="M16 4l1 2.2 2.4.3-1.8 1.7.5 2.4L16 9.5 13.9 10.6l.5-2.4L12.6 6.5 15 6.2 16 4z" fill="#b78a32"/></svg>
+    <h1>Nikkahfied</h1>
+  </div>
+
+  <div class="phone">
+    <div class="island"></div>
+    <div class="screenport" id="port">
+
+      <!-- STATUS BAR -->
+      <div class="statusbar" id="statusbar">
+        <span id="clock">9:41</span>
+        <div class="icons">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 2.2c2 0 3.8.8 5.2 2l1.3-1.4A9.7 9.7 0 0 0 8 0 9.7 9.7 0 0 0 1.5 2.8L2.8 4.2A7.7 7.7 0 0 1 8 2.2z"/><path d="M8 5.6c1.1 0 2.1.4 2.9 1.2l1.3-1.4A6 6 0 0 0 8 3.6a6 6 0 0 0-4.2 1.8l1.3 1.4A4.1 4.1 0 0 1 8 5.6z"/><circle cx="8" cy="9.4" r="1.6"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="17" height="8" rx="1.5" fill="currentColor"/><rect x="23" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg>
+        </div>
+      </div>
+
+      <!-- ================= SPLASH ================= -->
+      <section class="screen active" id="splash">
+        <div class="glow"></div>
+        <div class="wrap">
+          <div class="logo">
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.2 4 2.5C10.8 6.2 12 5 14 5h.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M17 3l1.1 2.4 2.6.3-1.9 1.8.5 2.6L17 9.1 14.7 10.1l.5-2.6-1.9-1.8 2.6-.3L17 3z" fill="#b78a32"/></svg>
+          </div>
+          <h2>Nikkahfied</h2>
+          <p>Marriage-minded matches, built on trust, faith &amp; family.</p>
+          <div class="dots"><i></i><i></i><i></i></div>
+        </div>
+      </section>
+
+      <!-- ================= ONBOARDING ================= -->
+      <section class="screen" id="onboarding">
+        <div class="ob-hero">
+          <img id="obImg" src="assets/girl1.jpg" alt="" />
+          <div class="veil"></div>
+          <div class="badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.6 5.7 21l2.3-7.1-6-4.5h7.6L12 2z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <span id="obBadge">Verified profiles only</span>
+          </div>
+        </div>
+        <div class="ob-content">
+          <h2 id="obTitle">Find someone who shares your <em>deen</em></h2>
+          <p id="obText">Every member is selfie-verified. Browse marriage-intent profiles with the values, practice and goals that matter to you.</p>
+          <div class="ob-dots"><i class="on"></i><i></i><i></i></div>
+          <div class="ob-actions">
+            <button class="btn btn-primary" onclick="obNext()">Continue</button>
+            <button class="btn btn-ghost" onclick="go('login')">I already have an account</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= LOGIN ================= -->
+      <section class="screen auth" id="login">
+        <div class="body">
+          <div class="top">
+            <h2>Welcome back</h2>
+            <p class="sub">Sign in to continue your search.</p>
+          </div>
+          <div class="form">
+            <div class="field">
+              <label>Email or phone</label>
+              <div class="control">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <input type="text" placeholder="ayesha@example.com" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <div class="control">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
+                <input type="password" placeholder="••••••••" />
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="go('discover');setTab('discover')">Sign in</button>
+            <div class="divider">or continue with</div>
+            <div class="social">
+              <button class="btn btn-ghost">Google</button>
+              <button class="btn btn-ghost">Apple</button>
+            </div>
+          </div>
+        </div>
+        <div class="switchrow">New to Nikkahfied? <b onclick="go('signup')">Create account</b></div>
+      </section>
+
+      <!-- ================= SIGNUP ================= -->
+      <section class="screen auth" id="signup">
+        <div class="body">
+          <div class="top">
+            <h2>Create your account</h2>
+            <p class="sub">It takes two minutes. A guardian can be added later.</p>
+          </div>
+          <div class="form">
+            <div class="field">
+              <label>Full name</label>
+              <div class="control">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <input type="text" placeholder="Your name" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <div class="control">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <input type="email" placeholder="you@example.com" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <div class="control">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg>
+                <input type="password" placeholder="Create a password" />
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="go('discover');setTab('discover')">Create account</button>
+            <button class="btn btn-gold">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.6 5.7 21l2.3-7.1-6-4.5h7.6L12 2z" stroke="#3a2c08" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              Continue with guardian (Wali)
+            </button>
+          </div>
+        </div>
+        <div class="switchrow">Already a member? <b onclick="go('login')">Sign in</b></div>
+      </section>
+
+      <!-- ================= DISCOVER ================= -->
+      <section class="screen" id="discover">
+        <div class="appbar">
+          <div class="title">Discover<small id="discCount">6 nearby profiles</small></div>
+          <div style="display:flex;gap:10px">
+            <button class="iconbtn" onclick="go('browse');setTab('browse')" aria-label="Browse">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-3.2-3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </button>
+            <button class="iconbtn" aria-label="Filters">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="deck" id="deck">
+          <div class="deck-empty" id="deckEmpty">
+            <div class="circ">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2.2 0 3.5 1.4 4 2.5C10.5 6.4 11.8 5 14 5c3.5 0 5 4 3.5 7-.6 1.1-1.5 2.2-2.5 3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <h3>You're all caught up</h3>
+            <p style="max-width:26ch">New marriage-minded profiles are added daily. Adjust your filters to see more.</p>
+            <button class="btn btn-ghost" style="width:auto;padding:12px 22px" onclick="resetDeck()">Refresh deck</button>
+          </div>
+          <!-- on-card controls: Like + Info (pass = swipe down, super = swipe up) -->
+          <div class="deck-controls" id="deckControls">
+            <button class="dc-btn dc-like" onclick="swipeTop('left')" aria-label="Send interest">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2.2 0 3.5 1.4 4 2.5C10.5 6.4 11.8 5 14 5c3.5 0 5 4 3.5 7C20 17 12 21 12 21z" fill="currentColor"/></svg>
+            </button>
+            <button class="dc-btn dc-info" onclick="openDetail(currentTopIndex())" aria-label="View profile">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= BROWSE ================= -->
+      <section class="screen" id="browse">
+        <div class="appbar">
+          <div class="title">Browse<small>Filter by what matters</small></div>
+          <button class="iconbtn" onclick="go('discover');setTab('discover')" aria-label="Back to discover">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="searchbar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#8c857a" stroke-width="1.7"/><path d="M20 20l-3.2-3.2" stroke="#8c857a" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input placeholder="Search by city, profession, community…" />
+        </div>
+        <div class="chips" id="browseChips">
+          <div class="chip on">All</div>
+          <div class="chip">Practising</div>
+          <div class="chip">Sunni</div>
+          <div class="chip">Wali added</div>
+          <div class="chip">Verified</div>
+          <div class="chip">Never married</div>
+          <div class="chip">Hafiz/a</div>
+        </div>
+        <div class="body">
+          <div class="grid" id="browseGrid"></div>
+        </div>
+      </section>
+
+      <!-- ================= MATCHES ================= -->
+      <section class="screen" id="matches">
+        <div class="appbar">
+          <div class="title">Matches<small>Mutual interest</small></div>
+          <button class="iconbtn ghost" aria-label="More">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+          </button>
+        </div>
+        <div class="body">
+          <div class="seclabel">New matches</div>
+          <div class="newrow" id="newMatches"></div>
+          <div class="seclabel">Conversations</div>
+          <div class="mlist" id="convList"></div>
+        </div>
+      </section>
+
+      <!-- ================= CHAT THREAD ================= -->
+      <section class="screen" id="chat">
+        <div class="chat-head">
+          <button class="iconbtn ghost" onclick="go('matches');setTab('matches')" aria-label="Back">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="av"><img id="chatAv" src="assets/girl1.jpg" alt="" /></div>
+          <div class="who">
+            <h4 id="chatName">Ayesha Siddiqui
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#d1567f"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </h4>
+            <p>Active now</p>
+          </div>
+          <button class="iconbtn ghost" style="margin-left:auto" aria-label="Options">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+          </button>
+        </div>
+        <div class="chaperone">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 10-4-1.7-7-5.6-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p><b>Chaperone mode is on.</b> Ayesha's guardian (Wali) can view this conversation. Keep it respectful and marriage-focused.</p>
+        </div>
+        <div class="msgs" id="msgs">
+          <div class="daypill">Today</div>
+          <div class="bubble them">Assalamu alaikum, thank you for your interest. May I ask what you're looking for in marriage? <span class="tm">10:24</span></div>
+          <div class="bubble me">Wa alaikum assalam. JazakAllah for accepting. I'm looking for a practising partner to build a home on deen, in shaa Allah. <span class="tm">10:26</span></div>
+          <div class="bubble them">That's lovely to hear. My family is involved in the process — would you be open to a call with my Wali this week? <span class="tm">10:28</span></div>
+          <div class="bubble me">Absolutely, that's the right way. Please let me know a time that suits them. <span class="tm">10:29</span></div>
+        </div>
+        <div class="composer">
+          <div class="inp">
+            <input id="msgInput" placeholder="Write a respectful message…" onkeydown="if(event.key==='Enter')sendMsg()" />
+          </div>
+          <button class="send" onclick="sendMsg()" aria-label="Send">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12l16-8-6 16-3-7-7-1z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= PROFILE DETAIL ================= -->
+      <section class="screen" id="detail">
+        <div class="body">
+          <div class="det-hero">
+            <button class="det-back" onclick="go(prevScreen);setTab(prevTab)" aria-label="Back">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#211f1b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <img id="detImg" src="" alt="" />
+            <div class="veil"></div>
+            <div class="det-name">
+              <h2 id="detName">—
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#d1567f"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </h2>
+              <div class="meta" id="detMeta"></div>
+            </div>
+          </div>
+          <div class="det-body">
+            <div class="biocard" id="detBio"></div>
+            <div class="secttitle">About</div>
+            <p class="abouttxt" id="detAbout"></p>
+            <div class="secttitle" style="margin-top:22px">Interests</div>
+            <div class="interests" id="detInterests"></div>
+          </div>
+        </div>
+        <div class="det-cta">
+          <button class="sa-pass" onclick="go(prevScreen);setTab(prevTab)" aria-label="Pass">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#9aa0ab" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </button>
+          <button class="btn btn-primary" onclick="interestFromDetail()">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2.2 0 3.5 1.4 4 2.5C10.5 6.4 11.8 5 14 5c3.5 0 5 4 3.5 7C20 17 12 21 12 21z" fill="#fff"/></svg>
+            Send interest
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= MY PROFILE ================= -->
+      <section class="screen" id="profile">
+        <div class="body">
+          <div class="me-head">
+            <div class="av">
+              <img src="assets/me.jpg" alt="" />
+              <div class="edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20h4l10-10-4-4L4 16v4z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+            </div>
+            <h2>Imran Yousaf
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#d1567f"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </h2>
+            <p>29 · Lahore · Civil Engineer</p>
+          </div>
+          <div class="completion">
+            <div class="l1"><span>Profile strength</span><b>78%</b></div>
+            <div class="bar"><i></i></div>
+            <p style="font-size:12px;color:var(--muted);margin-top:9px">Add 2 more photos and your prayer details to reach 100% and rank higher.</p>
+          </div>
+          <div class="menu">
+            <a><div class="ic gold"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.6 5.7 21l2.3-7.1-6-4.5h7.6L12 2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="lab">Upgrade to Gold<div class="sub">See who sent you interest</div></div><div class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div></a>
+            <a><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 10-4-1.7-7-5.6-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="lab">Guardian (Wali)<div class="sub">Invite a family guardian</div></div><div class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div></a>
+            <a><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7l8-4 8 4-8 4-8-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="lab">Photo privacy<div class="sub">Blur photos until you accept</div></div><div class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div></a>
+            <a><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><div class="lab">Match preferences<div class="sub">Age, location, practice</div></div><div class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div></a>
+            <a onclick="go('login')"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="lab">Sign out</div><div class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MATCH POPUP ================= -->
+      <div class="matchpop" id="matchpop">
+        <div class="avs">
+          <img src="assets/me.jpg" alt="" />
+          <div class="heart"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2.2 0 3.5 1.4 4 2.5C10.5 6.4 11.8 5 14 5c3.5 0 5 4 3.5 7C20 17 12 21 12 21z"/></svg></div>
+          <img id="matchAv" src="" alt="" />
+        </div>
+        <h2>It's a Match</h2>
+        <p id="matchText">You and Ayesha have shown interest. Start a respectful conversation.</p>
+        <div class="acts">
+          <button class="btn btn-gold" onclick="closeMatch();go('chat')">Send a message</button>
+          <button class="btn btn-ghost" onclick="closeMatch()">Keep discovering</button>
+        </div>
+      </div>
+
+      <!-- ================= BOTTOM NAV ================= -->
+      <nav class="nav hidden" id="nav">
+        <button data-tab="discover" class="on" onclick="go('discover');setTab('discover')">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2.2 0 3.5 1.4 4 2.5C10.5 6.4 11.8 5 14 5c3.5 0 5 4 3.5 7C20 17 12 21 12 21z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          Discover
+        </button>
+        <button data-tab="browse" onclick="go('browse');setTab('browse')">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-3.2-3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Browse
+        </button>
+        <button data-tab="matches" onclick="go('matches');setTab('matches')">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.6 5.7 21l2.3-7.1-6-4.5h7.6L12 2z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          Matches
+        </button>
+        <button data-tab="chat" onclick="go('matches');setTab('chat')">
+          <span class="badge">2</span>
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-5 4V5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          Chats
+        </button>
+        <button data-tab="profile" onclick="go('profile');setTab('profile')">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20c0-3.4 3.1-6 7-6s7 2.6 7 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Profile
+        </button>
+      </nav>
+
+    </div>
+  </div>
+  <p class="hint">Tap through it like a real app · cards are swipeable (drag or use the buttons)</p>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const profiles = [
+  {name:"Ayesha Siddiqui", age:26, city:"Lahore", country:"Pakistan", job:"Architect", edu:"MSc, UET Lahore",
+   sect:"Sunni · Practising", prayer:"Prays 5x", marital:"Never married", family:"Lives with family", height:"5'5\"",
+   img:"assets/girl1.jpg", tags:["Practising","Hijab","Family-oriented"], about:"Faith comes first for me. I love sketching old Lahore architecture, weekend chai with family, and reading Seerah. Looking for a kind, ambitious partner to grow with on the path of deen, in shaa Allah.",
+   interests:["Calligraphy","Architecture","Reading Seerah","Cooking","Travel","Charity work"]},
+  {name:"Mariam Qureshi", age:24, city:"Karachi", country:"Pakistan", job:"Dentist", edu:"BDS, Dow University",
+   sect:"Sunni · Practising", prayer:"Prays 5x", marital:"Never married", family:"Eldest of three", height:"5'4\"",
+   img:"assets/girl2.jpg", tags:["Verified","Hafiza","Never married"], about:"A dentist who smiles more than her patients. I memorised the Qur'an at 19 and want a home where it's recited daily. I value honesty, soft humour and strong family ties.",
+   interests:["Qur'an","Calligraphy","Baking","Hiking","Languages"]},
+  {name:"Zainab Malik", age:28, city:"Islamabad", country:"Pakistan", job:"Software Engineer", edu:"BS CS, NUST",
+   sect:"Sunni · Practising", prayer:"Prays 5x", marital:"Never married", family:"Independent", height:"5'6\"",
+   img:"assets/girl3.jpg", tags:["Practising","Tech","Hijab"], about:"I build software by day and stargaze by night. Equal parts logical and warm. Seeking a partner who is grounded in faith, supportive of ambition, and ready to build a serious future.",
+   interests:["Coding","Astronomy","Tafsir circles","Cycling","Photography"]},
+  {name:"Khadija Aslam", age:25, city:"Dubai", country:"UAE", job:"Primary Teacher", edu:"B.Ed",
+   sect:"Sunni · Practising", prayer:"Prays 5x", marital:"Never married", family:"Close-knit", height:"5'3\"",
+   img:"assets/girl4.jpg", tags:["Verified","Teacher","Wali added"], about:"I teach little ones their first surahs and it's the joy of my life. Gentle, patient, and family-centred. I'd love a partner with whom every day feels like building Jannah at home.",
+   interests:["Teaching","Gardening","Nasheeds","Volunteering","Cooking"]},
+  {name:"Fatima Noor", age:27, city:"London", country:"UK", job:"Pharmacist", edu:"MPharm, UCL",
+   sect:"Sunni · Practising", prayer:"Prays 5x", marital:"Never married", family:"British-Pakistani", height:"5'5\"",
+   img:"assets/girl5.jpg", tags:["Practising","Verified","Career"], about:"Born in London, rooted in deen. I balance a busy pharmacy with halaqa on weekends. I'm looking for someone honest, ambitious and family-minded for a serious, blessed marriage.",
+   interests:["Healthcare","Halaqa","Calligraphy","Travel","Tea tasting"]},
+  {name:"Sana Tariq", age:23, city:"Toronto", country:"Canada", job:"Medical Student", edu:"MD candidate",
+   sect:"Sunni · Practising", prayer:"Prays 5x", marital:"Never married", family:"Supportive", height:"5'4\"",
+   img:"assets/girl6.jpg", tags:["Student","Hijab","Never married"], about:"Future doctor, lifelong learner. I find calm in tahajjud and energy in a good debate. Seeking a partner of strong character and faith to navigate this dunya together.",
+   interests:["Medicine","Tahajjud","Debating","Skiing","Poetry"]}
+];
+
+/* onboarding slides */
+const obSlides = [
+  {img:"assets/girl1.jpg", badge:"Verified profiles only", title:"Find someone who shares your <em>deen</em>", text:"Every member is selfie-verified. Browse marriage-intent profiles with the values, practice and goals that matter to you."},
+  {img:"assets/girl4.jpg", badge:"Guardian-friendly", title:"Involve your <em>Wali</em>, the right way", text:"Add a guardian who can oversee conversations with Chaperone mode. Modern matchmaking, with family at the centre."},
+  {img:"assets/girl2.jpg", badge:"Marriage, not games", title:"Built for <em>nikkah</em>, not chit-chat", text:"No casual swiping culture. Photo privacy, respectful chat and serious intentions, in shaa Allah."}
+];
+
+/* matches + conversations */
+const matchRow = [0,3,4,2,1];
+const convos = [
+  {p:0, last:"Please let me know a time that suits them.", t:"now", unread:0, online:true, chaperone:true},
+  {p:3, last:"My Wali will reach out tomorrow, in shaa Allah.", t:"12m", unread:2, online:true, chaperone:true},
+  {p:4, last:"JazakAllah for your message — that's thoughtful.", t:"1h", unread:0, online:false, chaperone:false},
+  {p:2, last:"Salam! Lovely to match. How are you?", t:"3h", unread:1, online:false, chaperone:true}
+];
+
+/* ============ NAV / SCREEN ============ */
+let prevScreen='discover', prevTab='discover';
+const mainScreens=['discover','browse','matches','chat','profile'];
+
+function go(id){
+  const cur=document.querySelector('.screen.active');
+  if(cur && cur.id!==id){prevScreen=cur.id;}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  const sb=document.querySelector('.body, .msgs'); // reset scroll handled per screen
+  const bodyEl=el.querySelector('.body');if(bodyEl)bodyEl.scrollTop=0;
+  // dark status bar on dark screens
+  const dark = (id==='splash');
+  document.getElementById('statusbar').classList.toggle('dark',dark);
+  // nav visibility
+  const nav=document.getElementById('nav');
+  nav.classList.toggle('hidden', !mainScreens.includes(id) || id==='chat');
+}
+function setTab(tab){
+  prevTab=tab;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+}
+
+/* ============ ONBOARDING ============ */
+let obIdx=0;
+function obNext(){
+  obIdx++;
+  if(obIdx>=obSlides.length){go('signup');obIdx=0;renderOb();return;}
+  renderOb();
+}
+function renderOb(){
+  const s=obSlides[obIdx];
+  document.getElementById('obImg').src=`${s.img}`;
+  document.getElementById('obBadge').textContent=s.badge;
+  document.getElementById('obTitle').innerHTML=s.title;
+  document.getElementById('obText').textContent=s.text;
+  document.querySelectorAll('#onboarding .ob-dots i').forEach((d,i)=>d.classList.toggle('on',i===obIdx));
+}
+
+/* ============ SWIPE DECK ============ */
+let deckOrder=[];
+function buildDeck(){
+  const deck=document.getElementById('deck');
+  deck.querySelectorAll('.card').forEach(c=>c.remove());
+  deckOrder=profiles.map((_,i)=>i);
+  // render in reverse so first profile is on top
+  for(let i=deckOrder.length-1;i>=0;i--){
+    deck.appendChild(makeCard(deckOrder[i]));
+  }
+  applyStack();
+  updateDeckState();
+}
+function makeCard(idx){
+  const p=profiles[idx];
+  const c=document.createElement('div');
+  c.className='card';c.dataset.idx=idx;
+  c.innerHTML=`
+    <img src="${p.img}" alt="">
+    <div class="scrim"></div>
+    <div class="verify"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M8 12.5l2.5 2.5L16 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verified</div>
+    <div class="stamp like">Interest</div>
+    <div class="stamp view">Profile</div>
+    <div class="stamp nope">Pass</div>
+    <div class="info">
+      <div class="nm"><h3>${p.name.split(' ')[0]}</h3><span class="age">${p.age}</span></div>
+      <div class="meta"><span>${p.job}</span><span class="dot"></span><span>${p.city}</span><span class="dot"></span><span>${p.sect.split(' · ')[1]}</span></div>
+      <div class="tags">${p.tags.map(t=>`<span>${t}</span>`).join('')}</div>
+    </div>`;
+  c.addEventListener('click',e=>{if(!c.dataset.dragged)openDetail(idx);});
+  enableDrag(c);
+  return c;
+}
+function topCard(){const cards=document.querySelectorAll('#deck .card');return cards[cards.length-1];}
+function currentTopIndex(){const t=topCard();return t?parseInt(t.dataset.idx):null;}
+function updateDeckState(){
+  const remaining=document.querySelectorAll('#deck .card').length;
+  document.getElementById('deckEmpty').classList.toggle('show',remaining===0);
+  const dc=document.getElementById('deckControls');
+  dc.style.opacity=remaining===0?'0':'1';
+  dc.style.pointerEvents=remaining===0?'none':'auto';
+  document.getElementById('discCount').textContent=`${remaining} nearby profile${remaining===1?'':'s'}`;
+}
+function resetDeck(){buildDeck();}
+
+/* arrange remaining cards into a subtle stacked depth (top = full, others tucked behind) */
+function applyStack(){
+  const cards=[...document.querySelectorAll('#deck .card')];
+  const n=cards.length;
+  cards.forEach((c,i)=>{
+    if(c.dataset.dragging)return;        // don't disturb a card being dragged
+    const depth=n-1-i;                   // 0 = top card
+    if(depth===0){c.style.transform='';c.style.opacity='1';c.style.cursor='grab';}
+    else{const d=Math.min(depth,2);c.style.transform=`translateY(${d*12}px) scale(${1-d*0.05})`;c.style.opacity=depth>2?'0':'1';}
+  });
+}
+function enableDrag(card){
+  const idx=parseInt(card.dataset.idx);
+  const like=card.querySelector('.stamp.like'),
+        view=card.querySelector('.stamp.view'),
+        nope=card.querySelector('.stamp.nope');
+  let sx=0,sy=0,dx=0,dy=0,drag=false,vx=0,vy=0,lx=0,ly=0,lt=0;
+  const clearStamps=()=>{like.style.opacity=0;view.style.opacity=0;nope.style.opacity=0;};
+  const down=e=>{
+    if(card!==topCard())return;
+    drag=true;card.dataset.dragging='1';
+    card.style.transition='none';card.style.cursor='grabbing';
+    sx=lx=e.clientX;sy=ly=e.clientY;lt=performance.now();vx=vy=0;
+    delete card.dataset.dragged;
+    try{card.setPointerCapture(e.pointerId);}catch(_){}
+  };
+  const move=e=>{
+    if(!drag)return;
+    const cx=e.clientX,cy=e.clientY,now=performance.now(),dt=Math.max(1,now-lt);
+    vx=(cx-lx)/dt;vy=(cy-ly)/dt;lx=cx;ly=cy;lt=now;       // px per ms (velocity)
+    dx=cx-sx;dy=cy-sy;
+    if(Math.abs(dx)>5||Math.abs(dy)>5)card.dataset.dragged='1';
+    card.style.transform=`translate(${dx}px,${dy}px) rotate(${dx/24}deg) scale(1.02)`;
+    like.style.opacity=Math.max(0,Math.min(1,-dx/72));       /* left  = interested */
+    view.style.opacity=Math.max(0,Math.min(1,dx/72));        /* right = view profile */
+    nope.style.opacity=Math.max(0,Math.min(1,Math.abs(dy)/72));/* up/down = pass */
+  };
+  const up=()=>{
+    if(!drag)return;drag=false;delete card.dataset.dragging;card.style.cursor='grab';
+    card.style.transition='transform .45s cubic-bezier(.22,1,.36,1), opacity .4s ease';
+    const TH=64, FLICK=0.4;   // small distance OR a quick flick triggers
+    if(dx<-TH || (vx<-FLICK && dx<-12)){fly(card,'left');}            /* INTERESTED */
+    else if(dy>TH || (vy>FLICK && dy>12)){fly(card,'down');}          /* PASS */
+    else if(dy<-TH || (vy<-FLICK && dy<-12)){fly(card,'up');}         /* PASS */
+    else if(dx>TH || (vx>FLICK && dx>12)){card.style.transform='';openDetail(idx);} /* VIEW DETAILS */
+    else{card.style.transform='';}
+    clearStamps();dx=dy=0;
+  };
+  card.addEventListener('pointerdown',down);
+  card.addEventListener('pointermove',move);
+  card.addEventListener('pointerup',up);
+  card.addEventListener('pointercancel',up);
+}
+function fly(card,dir){
+  const idx=parseInt(card.dataset.idx);
+  const off=dir==='left'?-680:dir==='right'?680:0;
+  const offY=dir==='up'?-860:dir==='down'?880:80;
+  card.style.transform=`translate(${off}px,${offY}px) rotate(${off/20}deg)`;
+  card.style.opacity='0';
+  setTimeout(()=>{card.remove();applyStack();updateDeckState();},420);
+  if(dir==='left'){maybeMatch(idx);}   /* left swipe = interested → possible match */
+}
+function swipeTop(dir){
+  const t=topCard();if(!t)return;
+  t.style.transition='transform .4s cubic-bezier(.16,1,.3,1), opacity .4s';
+  fly(t,dir);
+}
+/* show a match for a couple of profiles */
+function maybeMatch(idx){
+  if([0,3].includes(idx)){
+    setTimeout(()=>openMatch(idx),360);
+  }
+}
+
+/* ============ MATCH POPUP ============ */
+function openMatch(idx){
+  const p=profiles[idx];
+  document.getElementById('matchAv').src=`${p.img}`;
+  document.getElementById('matchText').textContent=`You and ${p.name.split(' ')[0]} have shown interest. Start a respectful conversation.`;
+  document.getElementById('matchpop').classList.add('show');
+  // prime chat with this person
+  openChatWith(idx,false);
+}
+function closeMatch(){document.getElementById('matchpop').classList.remove('show');}
+
+/* ============ DETAIL ============ */
+function openDetail(idx){
+  if(idx===null||idx===undefined)return;
+  const p=profiles[idx];
+  document.getElementById('detImg').src=`${p.img}`;
+  document.getElementById('detName').childNodes[0].nodeValue=p.name+' ';
+  document.getElementById('detMeta').innerHTML=
+    `<span>${p.age}</span><span class="dot"></span><span>${p.city}, ${p.country}</span><span class="dot"></span><span>${p.height}</span>`;
+  const bio=[
+    ['job','Profession',p.job,'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6'],
+    ['edu','Education',p.edu,'M22 9L12 4 2 9l10 5 10-5zM6 11v5c0 1 2.7 3 6 3s6-2 6-3v-5'],
+    ['sect','Faith',p.sect,'M12 3l7 3v5c0 4.4-3 8.3-7 10-4-1.7-7-5.6-7-10V6l7-3z'],
+    ['prayer','Salah',p.prayer,'M12 2v6m0 8v6M4 12H2m20 0h-2M6 6L4 4m16 2l2-2'],
+    ['marital','Marital status',p.marital,'M12 21s-7-4.35-9.5-9C1 9 2.5 5 6 5c2.2 0 3.5 1.4 4 2.5C10.5 6.4 11.8 5 14 5c3.5 0 5 4 3.5 7'],
+    ['family','Family',p.family,'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm6 0a3 3 0 1 0 0-6M3 20c0-3 2.7-5 6-5s6 2 6 5m0-5c2.5 0 6 1.5 6 5']
+  ];
+  document.getElementById('detBio').innerHTML=bio.map(b=>`
+    <div class="biorow">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="${b[3]}" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><div class="k">${b[1]}</div><div class="v">${b[2]}</div></div>
+    </div>`).join('');
+  document.getElementById('detAbout').textContent=p.about;
+  document.getElementById('detInterests').innerHTML=p.interests.map(i=>`<span>${i}</span>`).join('');
+  document.getElementById('detail').dataset.idx=idx;
+  go('detail');
+}
+function interestFromDetail(){
+  const idx=parseInt(document.getElementById('detail').dataset.idx);
+  go(prevScreen);setTab(prevTab);
+  // remove from deck if present
+  const card=document.querySelector(`#deck .card[data-idx="${idx}"]`);
+  if(card){card.style.transition='transform .4s, opacity .4s';fly(card,'left');}
+  else{maybeMatch(idx);}
+}
+
+/* ============ BROWSE ============ */
+function buildBrowse(){
+  const g=document.getElementById('browseGrid');
+  g.innerHTML=profiles.concat(profiles.slice(0,2)).map((p,i)=>{
+    const blurred = (i%4===2); // some profiles have photo privacy on
+    return `<div class="pcard ${blurred?'blurred':''}" style="--i:${i}" onclick="openDetail(${i%profiles.length})">
+      <img src="${p.img}" alt="">
+      <div class="ov"></div>
+      ${blurred?`<div class="reveal">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 7l8-4 8 4-8 4-8-4z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M4 12l8 4 8-4" stroke="#fff" stroke-width="1.5"/></svg>
+          <small>Photo private<br>Send interest to view</small>
+        </div>`:`<div class="blurpill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M8 12.5l2.5 2.5L16 9" stroke="#7fe0b6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Verified</div>`}
+      <div class="lbl"><h4>${p.name.split(' ')[0]}, ${p.age}</h4><p>${p.job} · ${p.city}</p></div>
+    </div>`;
+  }).join('');
+}
+/* chip toggling */
+document.addEventListener('click',e=>{
+  const chip=e.target.closest('#browseChips .chip');
+  if(chip){
+    if(chip.textContent==='All'){document.querySelectorAll('#browseChips .chip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');}
+    else{document.querySelector('#browseChips .chip').classList.remove('on');chip.classList.toggle('on');}
+  }
+});
+
+/* ============ MATCHES ============ */
+function buildMatches(){
+  document.getElementById('newMatches').innerHTML=matchRow.map((i,idx)=>{
+    const p=profiles[i];
+    return `<div class="nm-item" style="--i:${idx}" onclick="openChatWith(${i})">
+      <div class="ring"><img src="${p.img}" alt=""></div>
+      <span>${p.name.split(' ')[0]}</span></div>`;
+  }).join('');
+  document.getElementById('convList').innerHTML=convos.map((c,idx)=>{
+    const p=profiles[c.p];
+    return `<div class="mrow" style="--i:${idx}" onclick="openChatWith(${c.p})">
+      <div class="av"><img src="${p.img}" alt="">${c.online?'<span class="on"></span>':''}</div>
+      <div class="txt">
+        <div class="l1"><h4>${p.name.split(' ')[0]} ${p.name.split(' ')[1]||''}</h4>${c.chaperone?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 10-4-1.7-7-5.6-7-10V6l7-3z" stroke="#d1567f" stroke-width="1.7" stroke-linejoin="round"/></svg>':''}</div>
+        <p>${c.last}</p>
+      </div>
+      <div class="side"><div class="t">${c.t}</div>${c.unread?`<div class="unread">${c.unread}</div>`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============ CHAT ============ */
+function openChatWith(idx, navigate=true){
+  const p=profiles[idx];
+  document.getElementById('chatAv').src=`${p.img}`;
+  document.getElementById('chatName').childNodes[0].nodeValue=p.name+' ';
+  if(navigate){go('chat');}
+}
+function sendMsg(){
+  const inp=document.getElementById('msgInput');
+  const v=inp.value.trim();if(!v)return;
+  const msgs=document.getElementById('msgs');
+  const b=document.createElement('div');b.className='bubble me';
+  const time=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  b.innerHTML=`${v} <span class="tm">${time}</span>`;
+  msgs.appendChild(b);inp.value='';
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+/* ============ CLOCK ============ */
+function tick(){
+  const d=new Date();
+  document.getElementById('clock').textContent=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}).replace(/^0/,'');
+}
+
+/* ============ RIPPLE ============ */
+document.addEventListener('pointerdown',e=>{
+  const t=e.target.closest('.btn,.iconbtn,.menu a,.chip');
+  if(!t)return;
+  const r=t.getBoundingClientRect();
+  const size=Math.max(r.width,r.height)*1.5;
+  const s=document.createElement('span');
+  s.className='ripple';
+  s.style.width=s.style.height=size+'px';
+  s.style.left=(e.clientX-r.left)+'px';
+  s.style.top=(e.clientY-r.top)+'px';
+  t.appendChild(s);
+  setTimeout(()=>s.remove(),650);
+});
+
+/* ============ INIT ============ */
+buildDeck();buildBrowse();buildMatches();renderOb();tick();setInterval(tick,30000);
+/* auto-advance splash */
+setTimeout(()=>{if(document.querySelector('.screen.active').id==='splash')go('onboarding');},2200);
+</script>
+</body>
+</html>
